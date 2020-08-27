@@ -1,7 +1,10 @@
+import { Component, OnInit } from '@angular/core';
+
 import { Attributes } from '../modules/share/push-notifications/models/push-notifications.models';
-import { Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { PushNotificationsService } from '../modules/share/push-notifications/services/push-notifications.service';
+import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tab1',
@@ -14,6 +17,7 @@ export class Tab1Page {
   public systemToken: string;
   public attributes: Array<{ $key: string; value: string }>;
   public tags: Array<string>;
+  private notificationOpenedSub: Subscription;
 
   constructor(private pushNotifications: PushNotificationsService, public platform: Platform) {
     this.iniciarPushNotifications();
@@ -21,10 +25,36 @@ export class Tab1Page {
 
   iniciarPushNotifications() {
     this.platform.ready().then(() => {
-      this.isPushEnabled();
-      this.setContactKey('fukui2222');
-      this.getSettings();
+      if (this.platform.is('cordova')) {
+        this.isPushEnabled();
+        this.setContactKey('fukui2222');
+        this.setOnNotificationOpenedListener();
+        this.getSettings();
+      }
+      this.notificationOpenedSub = this.platform.resume.subscribe(() => {
+        console.log('****UserdashboardPage RESUMED****');
+        this.setOnNotificationOpenedListener();
+      });
     });
+  }
+
+  // ngOnInit() {
+  //   this.notificationOpenedSub = this.pushNotifications.notificationOpened?.subscribe((data) => {
+  //     console.log(data);
+  //   });
+  //   console.log(this.notificationOpenedSub);
+  // }
+
+  // ionViewWillEnter() {
+  //   if (this.platform.is('cordova')) {
+  //     console.log('finish');
+  //     this.notificationOpenedSub.unsubscribe();
+  //   }
+  // }
+
+  ionViewWillUnload() {
+    console.log('finish');
+    this.notificationOpenedSub.unsubscribe();
   }
 
   private getSettings(): void {
@@ -33,6 +63,15 @@ export class Tab1Page {
     this.getAttributes();
     this.getTags();
   }
+
+  // private async getSettings() {
+  //   await Promise.all([
+  //     this.getContactKey(),
+  //     this.getSystemToken(),
+  //     this.getAttributes(),
+  //     this.getTags(),
+  //   ]);
+  // }
 
   // START MCCordovaPlugin Methods
 
@@ -142,5 +181,16 @@ export class Tab1Page {
       .catch((error: Error) => console.log(error.message));
   }
 
-  // END MCCordovaPlugin Methods
+  // push通知を通じて送られてきたパラメータを取得
+  public setOnNotificationOpenedListener() {
+    console.log('ok');
+    alert('ok');
+    this.pushNotifications
+      .setOnNotificationOpenedListener()
+      .then((event) => {
+        event.values.url ? (window.location.href = event.values.url) : console.log('no url');
+      })
+      // .then((event) => console.log('url', event.values.url))
+      .catch((error: Error) => console.log(error.message));
+  }
 }

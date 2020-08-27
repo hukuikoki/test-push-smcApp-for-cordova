@@ -36,6 +36,9 @@ export interface PushNotificationsInterface {
   removeTag(successCallback: () => void, errorCallback: () => void, tag: string): void;
   getTags(successCallback: (tags: Array<string>) => void, errorCallback: () => void): void;
 
+  // openDirect
+  setOnNotificationOpenedListener(notificationOpenedListener: (event) => void): void;
+
   // ANDROID ONLY FEAURES
 
   // Push

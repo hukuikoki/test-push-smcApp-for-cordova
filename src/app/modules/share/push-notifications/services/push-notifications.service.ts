@@ -1,6 +1,5 @@
 import { Attributes } from '..';
 import { Injectable } from '@angular/core';
-// import { MCCordovaPlugin } from '../../../../../../plugins/cordova-plugin-marketingcloudsdk/www/MCCordovaPlugin';
 import { PushNotificationsInterface } from '../interfaces/push-notifications.interface';
 
 declare const MCCordovaPlugin: PushNotificationsInterface;
@@ -9,6 +8,9 @@ declare const MCCordovaPlugin: PushNotificationsInterface;
   providedIn: 'root',
 })
 export class PushNotificationsService {
+  // tslint:disable-next-line: variable-name
+  private _notificationOpened = null;
+
   constructor() {}
 
   // ANDROID AND iOS FEATURES
@@ -107,5 +109,18 @@ export class PushNotificationsService {
         tag
       );
     });
+  }
+
+  public setOnNotificationOpenedListener(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      MCCordovaPlugin.setOnNotificationOpenedListener(
+        // notificationOpenedListener
+        (event) => resolve(event)
+      );
+    });
+  }
+
+  public get notificationOpened() {
+    return this._notificationOpened?.asObservable();
   }
 }
